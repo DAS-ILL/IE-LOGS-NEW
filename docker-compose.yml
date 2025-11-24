@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ie_logs_backend
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-change-this-secret-key}
+      - DJANGO_DEBUG=${DJANGO_DEBUG:-False}
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-192.168.0.223,localhost,127.0.0.1}
+      - DB_NAME=${DB_NAME:-IE_LOGS_DB}
+      - DB_USER=${DB_USER:-minnal_admin}
+      - DB_PASSWORD=${DB_PASSWORD:-Minn@l!@#$$5}
+      - DB_HOST=${DB_HOST:-192.168.1.201}
+      - DB_PORT=${DB_PORT:-1433}
+      - CORS_ALLOWED_ORIGINS=http://192.168.0.223:8080,http://192.168.0.223,http://localhost:3000,http://localhost
+      - CSRF_TRUSTED_ORIGINS=http://192.168.0.223:8080,http://192.168.0.223,http://localhost:3000,http://localhost
+    ports:
+      - "8000:8000"
+    networks:
+      - ie_logs_network
+    volumes:
+      - ./backend:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ie_logs_frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+    networks:
+      - ie_logs_network
+
+volumes:
+  static_volume:
+  media_volume:
+
+networks:
+  ie_logs_network:
+    driver: bridge
